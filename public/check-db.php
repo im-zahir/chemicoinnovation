@@ -56,14 +56,19 @@ try {
         foreach ($tables as $table) {
             echo "- " . $table->name . "\n";
         }
-    } catch (Exception $e) {
+    } catch (PDOException $e) {
         echo "\n! Database connection failed: " . $e->getMessage() . "\n";
+        echo "PDO error code: " . $e->getCode() . "\n";
+        echo "PDO error info: " . json_encode($e->errorInfo, JSON_PRETTY_PRINT) . "\n";
         
         // Check Laravel database config
         echo "\nChecking Laravel database configuration:\n";
         $config = config('database.connections.sqlite');
         echo "Database driver: " . config('database.default') . "\n";
         echo "Database config: " . json_encode($config, JSON_PRETTY_PRINT) . "\n";
+    } catch (Exception $e) {
+        echo "\n! Error: " . $e->getMessage() . "\n";
+        echo "Stack trace:\n" . $e->getTraceAsString() . "\n";
     }
     
 } catch (Exception $e) {
