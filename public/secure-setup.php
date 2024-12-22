@@ -1,4 +1,8 @@
 <?php
+// Enable error reporting
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 // Set a secure password
 $setup_password = 'chemico2024setup'; // You'll use this password to access the setup page
 
@@ -39,18 +43,34 @@ if (!isset($_POST['password']) || $_POST['password'] !== $setup_password) {
     exit;
 }
 
-// If we get here, password was correct
-header('Content-Type: text/plain');
-
-// Include the autoloader
-require __DIR__.'/../laravel/vendor/autoload.php';
-
-// Create the application
-$app = require_once __DIR__.'/../laravel/bootstrap/app.php';
-
-$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
-
 try {
+    // First, check if we can find the Laravel installation
+    $laravelPath = __DIR__.'/../laravel';
+    if (!is_dir($laravelPath)) {
+        throw new Exception("Laravel directory not found at: $laravelPath");
+    }
+
+    // Include the autoloader
+    $autoloaderPath = $laravelPath.'/vendor/autoload.php';
+    if (!file_exists($autoloaderPath)) {
+        throw new Exception("Autoloader not found at: $autoloaderPath");
+    }
+    require $autoloaderPath;
+
+    // Load the application
+    $bootstrapPath = $laravelPath.'/bootstrap/app.php';
+    if (!file_exists($bootstrapPath)) {
+        throw new Exception("Bootstrap file not found at: $bootstrapPath");
+    }
+    $app = require_once $bootstrapPath;
+
+    $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
+
+    // Start output buffering
+    ob_start();
+
+    echo "<pre>\n";
+    
     // Generate application key
     $kernel->call('key:generate');
     echo "✓ Application key generated\n";
@@ -71,7 +91,38 @@ try {
 
     echo "\nSetup completed successfully!\n";
     echo "IMPORTANT: Delete this file (secure-setup.php) immediately for security!\n";
+    echo "</pre>";
+
+    // Flush the output buffer
+    ob_end_flush();
+
 } catch (Exception $e) {
-    echo "Error: " . $e->getMessage() . "\n";
+    // If there was an error, display it in a formatted way
+    ?>
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Setup Error</title>
+        <style>
+            body { font-family: Arial, sans-serif; margin: 40px; }
+            .container { max-width: 800px; margin: 0 auto; }
+            .error { color: red; background: #ffebee; padding: 15px; border-radius: 4px; }
+            .details { margin-top: 20px; background: #f5f5f5; padding: 15px; border-radius: 4px; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h2>Setup Error</h2>
+            <div class="error">
+                <?php echo htmlspecialchars($e->getMessage()); ?>
+            </div>
+            <div class="details">
+                <strong>Error Details:</strong><br>
+                <?php echo nl2br(htmlspecialchars($e->getTraceAsString())); ?>
+            </div>
+        </div>
+    </body>
+    </html>
+    <?php
 }
 ?>
