@@ -6,10 +6,10 @@ echo "<pre>\n";
 echo "Starting database check...\n\n";
 
 try {
-    require __DIR__.'/../vendor/autoload.php';
+    require '/home/chemqssp/laravel/vendor/autoload.php';
     echo "✓ Autoloader loaded\n";
     
-    $app = require_once __DIR__.'/../bootstrap/app.php';
+    $app = require_once '/home/chemqssp/laravel/bootstrap/app.php';
     echo "✓ Bootstrap loaded\n";
     
     $kernel = $app->make(Illuminate\Contracts\Http\Kernel::class);
@@ -19,7 +19,7 @@ try {
     echo "✓ Kernel initialized\n";
     
     // Get database configuration
-    $database_path = database_path('database.sqlite');
+    $database_path = '/home/chemqssp/laravel/database/database.sqlite';
     echo "\nDatabase Configuration:\n";
     echo "Path: " . $database_path . "\n";
     
